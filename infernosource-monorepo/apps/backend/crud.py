@@ -1,57 +1,49 @@
-from sqlalchemy.orm import Session
-from apps.backend import models, schemas
-from apps.backend.auth import get_password_hash
-from apps.backend.scraping.models import ScrapedPage
+# apps/backend/crud.py
 
-# ========== User CRUD ==========
+from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+from . import models
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_user_by_email(db: Session, email: str):
+    """
+    Retrieve a user by their email.
+    """
     return db.query(models.User).filter(models.User.email == email).first()
 
-def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = get_password_hash(user.password)
-    db_user = models.User(
-        email=user.email,
-        hashed_password=hashed_password,
-        full_name=user.full_name
-    )
+def create_user(db: Session, email: str, password: str):
+    """
+    Create a new user with the given email and raw password.
+    Returns the created User model instance.
+    """
+    hashed_password = pwd_context.hash(password)
+    db_user = models.User(email=email, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-# ========== Site CRUD ==========
+def authenticate_user(db: Session, email: str, password: str):
+    """
+    Verify a user's credentials.
+    Returns the user if successful, or None if invalid.
+    """
+    user = get_user_by_email(db, email)
+    if not user or not pwd_context.verify(password, user.hashed_password):
+        return None
+    return user
 
-def create_site(db: Session, site: schemas.SiteCreate, user_id: int):
-    db_site = models.Site(**site.dict(), owner_id=user_id)
-    db.add(db_site)
-    db.commit()
-    db.refresh(db_site)
-    return db_site
-
-def get_sites(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.Site).offset(skip).limit(limit).all()
-
-# ========== Session Log CRUD ==========
-
-def create_session_log(db: Session, log: schemas.SessionLogCreate, user_id: int):
-    db_log = models.SessionLog(**log.dict(), user_id=user_id)
-    db.add(db_log)
-    db.commit()
-    db.refresh(db_log)
-    return db_log
-
-def get_session_logs(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.SessionLog).offset(skip).limit(limit).all()
-
-# ========== Scraped Page CRUD ==========
-
-def create_page(db: Session, url: str, content: str, seo_score: float, created_by: int):
-    db_page = ScrapedPage(
+def create_page(db: Session, url: str, content: str, seo_score: int, owner_id: int):
+    """
+    Create a new Page record.
+    """
+    db_page = models.Page(
         url=url,
         content=content,
         seo_score=seo_score,
-        owner_id=created_by
+        owner_id=owner_id
     )
     db.add(db_page)
     db.commit()
@@ -59,4 +51,7 @@ def create_page(db: Session, url: str, content: str, seo_score: float, created_b
     return db_page
 
 def get_page(db: Session, page_id: int):
-    return db.query(ScrapedPage).filter(ScrapedPage.id == page_id).first()
+    """
+    Retrieve a Page by its ID.
+    """
+    return db.query(models.Page).filter(models.Page.id == page_id).first()
