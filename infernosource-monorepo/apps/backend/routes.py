@@ -1,45 +1,69 @@
-# apps/backend/routes.py
+# apps/backend/ai_rewriting/routes.py
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from apps.backend import crud, schemas, database
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional
+import os
+
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 router = APIRouter()
 
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class RewriteRequest(BaseModel):
+    text: str = Field(..., description="Text content to be rewritten")
+    tone: Optional[str] = Field("neutral", description="Desired tone (e.g., persuasive, casual, professional)")
+    temperature: Optional[float] = Field(0.7, description="Creativity level for AI output")
 
-# ----- USERS -----
-@router.post("/users/", response_model=schemas.UserOut)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+class RewriteResponse(BaseModel):
+    original: str
+    rewritten: str
+    tone: str
+    used_ai: bool
 
-@router.get("/users/", response_model=list[schemas.UserOut])
-def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_users(db, skip=skip, limit=limit)
+@router.post("/rewrite", response_model=RewriteResponse, tags=["AI Rewriting"])
+async def rewrite_text(request: RewriteRequest):
+    """
+    Rewrite text using AI (OpenAI GPT-based) or a fallback logic if unavailable.
+    """
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Input text cannot be empty.")
 
-# ----- SITES -----
-@router.post("/sites/", response_model=schemas.SiteOut)
-def create_site(site: schemas.SiteCreate, db: Session = Depends(get_db)):
-    return crud.create_site(db=db, site=site)
-
-@router.get("/sites/", response_model=list[schemas.SiteOut])
-def read_sites(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_sites(db, skip=skip, limit=limit)
-
-# ----- SESSION LOGS -----
-@router.post("/session-logs/", response_model=schemas.SessionLogOut)
-def create_session_log(log: schemas.SessionLogCreate, db: Session = Depends(get_db)):
-    return crud.create_session_log(db=db, log=log)
-
-@router.get("/session-logs/", response_model=list[schemas.SessionLogOut])
-def read_session_logs(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_session_logs(db, skip=skip, limit=limit)
+    if OPENAI_AVAILABLE and openai.api_key:
+        try:
+            prompt = (
+                f"Rewrite the following text in a {request.tone} tone:\n\n"
+                f"{request.text}\n\n"
+                "Rewritten:"
+            )
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a rewriting assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=request.temperature,
+                max_tokens=1000
+            )
+            rewritten = response['choices'][0]['message']['content'].strip()
+            return RewriteResponse(
+                original=request.text,
+                rewritten=rewritten,
+                tone=request.tone,
+                used_ai=True
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"AI rewriting failed: {str(e)}")
+    else:
+        # Fallback dummy rewrite
+        rewritten = f"[{request.tone} tone rewrite not available — dummy output]: {request.text}"
+        return RewriteResponse(
+            original=request.text,
+            rewritten=rewritten,
+            tone=request.tone,
+            used_ai=False
+        )

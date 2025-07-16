@@ -1,14 +1,15 @@
-import os
-from openai import OpenAI
+# apps/backend/ai_rewriting/routes.py
 
-client = OpenAI()
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
-def rewrite_content(text):
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are a smart SEO rewriter."},
-            {"role": "user", "content": f"Rewrite this: {text}"}
-        ]
-    )
-    return {"original": text, "rewritten": response.choices[0].message.content}
+router = APIRouter()
+
+class RewriteRequest(BaseModel):
+    text: str
+
+@router.post("/rewrite")
+async def rewrite_text(request: RewriteRequest):
+    # Placeholder AI rewrite logic
+    rewritten = f"[AI Rewritten] {request.text}"
+    return {"original": request.text, "rewritten": rewritten}

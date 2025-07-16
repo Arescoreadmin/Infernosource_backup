@@ -1,36 +1,36 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
 
-from apps.backend import auth, routes, seo_routes
-from apps.backend.database import engine
-from apps.backend.scraping import models as scraping_models
-from apps.backend.models import Base as core_base
-from apps.backend.celery_worker import process_page_async
+# Import routers from respective modules
+from apps.backend.auth import router as auth_router
+from apps.backend.routes import router as site_router
+from apps.backend.seo_routes import router as seo_router
+from apps.backend.scraper.routes import router as scrape_router
+from apps.backend.ai_rewriting.routes import router as ai_router
 
-# Initialize FastAPI app
-app = FastAPI(title="InfernoSource API", version="0.1.0")
+from apps.backend.database import Base, engine
 
-# Set up CORS
-origins = ["*"]  # You can restrict this to specific domains in production
+# ✅ Create DB tables (dev-only; Alembic should be used in production)
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="InfernoSource API",
+    description="Scrape, rewrite, audit, and generate websites with AI.",
+    version="0.1.0",
+)
+
+# 🔓 CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Health check
-@app.get("/")
-def health_check():
-    return JSONResponse(content={"status": "ok"})
-
-# Include routers
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(routes.router, tags=["Pages"])
-app.include_router(seo_routes.router, prefix="/seo", tags=["SEO"])
-
-# Create all DB tables (if not using Alembic)
-core_base.metadata.create_all(bind=engine)
-scraping_models.Base.metadata.create_all(bind=engine)
+# ✅ Mount all routers
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(site_router, prefix="/sites", tags=["Sites"])
+app.include_router(seo_router, prefix="/seo", tags=["SEO"])
+app.include_router(scrape_router, prefix="/scrape", tags=["Scraper"])
+app.include_router(ai_router, prefix="/rewrite", tags=["AI Rewriting"])

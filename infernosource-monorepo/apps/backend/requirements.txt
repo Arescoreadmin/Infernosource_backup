@@ -17,6 +17,7 @@ lxml
 python-dotenv
 scrapy
 bs4 
+python-multipart
 
 
 

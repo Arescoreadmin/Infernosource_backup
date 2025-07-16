@@ -1,76 +1,105 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
-# ========== Auth Schemas ==========
+
+# ===============================
+# ✅ User Schemas
+# ===============================
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: Optional[str] = None
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
+# ===============================
+# ✅ Token Schemas
+# ===============================
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-class LoginRequest(BaseModel):
-    username: EmailStr
-    password: str
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
-# ========== User Schemas ==========
 
-class UserBase(BaseModel):
-    email: EmailStr
-    full_name: Optional[str] = None
+# ===============================
+# ✅ Site Schemas
+# ===============================
 
-class UserCreate(UserBase):
-    password: str
-
-class UserOut(UserBase):
-    id: int
-    role: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-# ========== Site Schemas ==========
-
-class SiteBase(BaseModel):
+class SiteCreate(BaseModel):
+    name: str
     url: str
-    title: Optional[str] = None
 
-class SiteCreate(SiteBase):
-    pass
-
-class SiteOut(SiteBase):
+class SiteOut(BaseModel):
     id: int
+    name: str
+    url: str
     owner_id: int
 
     class Config:
         from_attributes = True
 
-# ========== SessionLog Schemas ==========
 
-class SessionLogBase(BaseModel):
-    action: str
+# ===============================
+# ✅ Session Log Schemas
+# ===============================
 
-class SessionLogCreate(SessionLogBase):
-    pass
-
-class SessionLogOut(SessionLogBase):
+class SessionLogOut(BaseModel):
     id: int
     user_id: int
+    action: str
     timestamp: datetime
+    details: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-# ========== ScrapedPage Schemas ==========
 
-class PageCreate(BaseModel):
+# ===============================
+# ✅ Scraping Schemas
+# ===============================
+
+class ScrapeRequest(BaseModel):
     url: str
-    html_content: Optional[str] = None
-    extracted_text: Optional[str] = None
-    site_id: Optional[int] = None
+    site_id: int
 
-class PageOut(PageCreate):
+class ScrapedPageResponse(BaseModel):
     id: int
-    created_at: datetime
+    url: str
+    html_content: Optional[str]
+    css_content: Optional[str]
+    js_content: Optional[str]
+    text_content: Optional[str]
 
     class Config:
         from_attributes = True
+
+
+# ===============================
+# ✅ AI Rewriting Schemas
+# ===============================
+
+class RewriteRequest(BaseModel):
+    content: str
+    tone: Optional[str] = "neutral"
+    purpose: Optional[str] = "general"
+
+class RewriteResponse(BaseModel):
+    original: str
+    rewritten: str
