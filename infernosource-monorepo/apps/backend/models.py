@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from apps.backend.database import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -10,10 +11,11 @@ class User(Base):
     email = Column(String(120), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String, nullable=True)
-    role = Column(String, default="user")  # 'user' or 'admin'
+    role = Column(String, default="user")
 
     sites = relationship("Site", back_populates="owner")
     session_logs = relationship("SessionLog", back_populates="user")
+
 
 class Site(Base):
     __tablename__ = "sites"
@@ -24,7 +26,8 @@ class Site(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="sites")
-    scraped_pages = relationship("ScrapedPage", back_populates="site", cascade="all, delete-orphan")  # ✅ Added line
+    scraped_pages = relationship("ScrapedPage", back_populates="site", cascade="all, delete-orphan")
+
 
 class SessionLog(Base):
     __tablename__ = "session_logs"
