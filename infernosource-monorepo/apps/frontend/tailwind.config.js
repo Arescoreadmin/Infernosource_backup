@@ -1,15 +1,18 @@
-// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
-      colors: {
-        inferno: {
-          DEFAULT: '#0B2239',     // primary dark blue from your logo
-          accent: '#FF6B00',      // example accent color
-          light: '#F2F6FA',       // light background color
-        },
-      },
+      // Example: Add custom colors here
+      // colors: {
+      //   'inferno-orange': '#F24E1E',
+      //   'inferno-red': '#D7263D',
+      // },
     },
   },
-  // ...rest of your config
+  plugins: [],
 };
