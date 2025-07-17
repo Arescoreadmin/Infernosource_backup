@@ -1,18 +1,17 @@
-// /apps/frontend/app/layout.tsx
 import './globals.css';
+import Navbar from '../components/Navbar'; // Adjust path if needed
 
 export const metadata = {
   title: 'InfernoSource',
   description: 'AI-powered website generator',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-          {children}
-        </div>
+        <Navbar />
+        {children}
       </body>
     </html>
   );

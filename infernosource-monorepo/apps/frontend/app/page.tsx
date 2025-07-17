@@ -1,19 +1,21 @@
-
 // /apps/frontend/app/page.tsx
+
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-screen items-center justify-center px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">InfernoSource</h1>
-      <p className="mb-8 text-lg text-gray-600 max-w-2xl text-center">
-        Your AI-powered toolkit for scraping, rewriting, auditing, and generating websites with cutting-edge machine learning.
-      </p>
-      <div className="flex gap-4">
-        <a href="/signup" className="px-6 py-3 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition">
-          Get Started
-        </a>
-        <a href="/about" className="px-6 py-3 bg-white border border-blue-600 text-blue-600 rounded shadow hover:bg-blue-50 transition">
-          Learn More
-        </a>
+    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-gray-800 to-gray-200">
+      <div className="flex flex-col items-center">
+        <img
+          src="/logo.png"
+          alt="InfernoSource Logo"
+          className="opacity-50 mb-8 w-[300px] md:w-[400px] lg:w-[500px] max-w-full"
+          style={{ filter: 'grayscale(1)' }}
+        />
+        <h1 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight text-center">
+          InfernoSource
+        </h1>
+        <p className="text-xl text-gray-200/80 mb-8 text-center max-w-xl">
+          AI-powered toolkit for modern web creation, rewriting, and research.
+        </p>
       </div>
     </main>
   );
