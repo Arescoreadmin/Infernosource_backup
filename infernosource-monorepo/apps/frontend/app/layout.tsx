@@ -1,4 +1,3 @@
-// /apps/frontend/app/layout.tsx
 import './globals.css';
 
 export const metadata = {
@@ -6,11 +5,13 @@ export const metadata = {
   description: 'AI-powered website generator',
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        {children}
+      <body>
+        <div className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+          {children}
+        </div>
       </body>
     </html>
   );
