@@ -1,12 +1,15 @@
 // tailwind.config.js
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}", // For Next.js app directory
-    "./components/**/*.{js,ts,jsx,tsx}", // If you have a components folder
-    // Add other folders if needed
-  ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        inferno: {
+          DEFAULT: '#0B2239',     // primary dark blue from your logo
+          accent: '#FF6B00',      // example accent color
+          light: '#F2F6FA',       // light background color
+        },
+      },
+    },
   },
-  plugins: [],
-}
+  // ...rest of your config
+};
