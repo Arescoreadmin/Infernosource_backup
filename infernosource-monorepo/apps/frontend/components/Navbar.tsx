@@ -1,19 +1,34 @@
-// /apps/frontend/components/Navbar.tsx
-import Link from 'next/link';
+'use client';
 
+import Image from 'next/image';
 
 export default function Navbar() {
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-black/70 backdrop-blur text-white shadow-md">
+    <nav className="w-full py-3 px-8 flex items-center justify-between bg-neutral-900 border-b border-neutral-800">
+      {/* Logo on the left */}
       <div className="flex items-center gap-3">
-        <img src="/logo.png" alt="InfernoSource Logo" className="h-10 w-10 rounded-full bg-white p-1" />
-        <span className="font-bold text-xl tracking-wide">InfernoSource</span>
+        <Image
+          src="/logo.png"
+          alt="InfernoSource Logo"
+          width={44}
+          height={44}
+          className="rounded-full bg-white p-1 shadow-lg"
+          priority
+        />
+        <span className="text-2xl font-extrabold tracking-wider text-white">
+          InfernoSource
+        </span>
       </div>
-      <div className="flex gap-6">
-        <a href="/" className="hover:underline">Home</a>
-        <a href="/about" className="hover:underline">About</a>
-        <a href="/features" className="hover:underline">Features</a>
-        <a href="/login" className="bg-white text-black rounded px-4 py-1 font-semibold hover:bg-orange-100 transition">Login</a>
+
+      {/* Navigation Links on the right */}
+      <div className="flex gap-6 items-center">
+        <a href="/" className="hover:text-orange-400 transition">Home</a>
+        <a href="/features" className="hover:text-orange-400 transition">Features</a>
+        <a href="/about" className="hover:text-orange-400 transition">About</a>
+        <a href="/contact" className="hover:text-orange-400 transition">Contact</a>
+        <a href="/login" className="px-4 py-1 bg-orange-600 rounded text-white font-semibold hover:bg-orange-700 transition">
+          Login
+        </a>
       </div>
     </nav>
   );

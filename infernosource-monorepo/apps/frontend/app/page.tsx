@@ -1,22 +1,49 @@
-// /apps/frontend/app/page.tsx
+"use client";
+import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-gray-800 to-gray-200">
-      <div className="flex flex-col items-center">
-        <img
+    <div className="relative flex flex-col items-center min-h-screen w-full bg-gradient-to-b from-black via-neutral-900 to-gray-800">
+      {/* Logo - moved up */}
+      <div className="pt-24 flex flex-col items-center w-full z-10 select-none pointer-events-none">
+       <Image
           src="/logo.png"
           alt="InfernoSource Logo"
-          className="opacity-50 mb-8 w-[300px] md:w-[400px] lg:w-[500px] max-w-full"
-          style={{ filter: 'grayscale(1)' }}
+          width={400}
+          height={200}
+          className="opacity-50"
+          style={{ maxWidth: "60vw", height: "auto" }}
+
+ 
         />
-        <h1 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight text-center">
-          InfernoSource
-        </h1>
-        <p className="text-xl text-gray-200/80 mb-8 text-center max-w-xl">
-          AI-powered toolkit for modern web creation, rewriting, and research.
-        </p>
       </div>
-    </main>
+      {/* Buttons and Tagline fixed at the bottom */}
+      <div
+        className="w-full flex flex-col items-center z-20"
+        style={{ position: "absolute", bottom: "88px" }}
+      >
+        {/* Buttons */}
+        <div className="flex gap-6 mb-8">
+          <a
+            href="/signup"
+            className="px-8 py-3 rounded bg-white text-orange-600 font-semibold text-lg shadow hover:bg-orange-100 transition"
+          >
+            Get Started
+          </a>
+          <a
+            href="/about"
+            className="px-8 py-3 rounded bg-black/50 text-white font-semibold border border-white text-lg hover:bg-black/70 transition"
+          >
+            Learn More
+          </a>
+        </div>
+        {/* Tagline */}
+        <div className="mt-4">
+          <span className="text-2xl text-white font-extrabold tracking-widest drop-shadow-xl">
+            Ignite. Create. Dominate.
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
