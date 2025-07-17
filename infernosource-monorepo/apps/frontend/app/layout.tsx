@@ -1,26 +1,20 @@
-import './globals.css';
-import Navbar from '../components/Navbar';
+import "./globals.css";
+import Navbar from "../components/Navbar";
+import { ConsentProvider } from "./context/ConsentContext";
 
 export const metadata = {
-  title: 'InfernoSource',
-  description: 'AI-powered website generator',
+  title: "InfernoSource",
+  description: "AI-powered website generator",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-neutral-900 text-white antialiased min-h-screen">
-        {/* Use a flex column so Navbar + main fills the height */}
-        <div className="flex flex-col min-h-screen">
+      <body className="min-h-screen bg-neutral-900 text-white antialiased">
+        <ConsentProvider>
           <Navbar />
-          <main className="flex-1 flex flex-col items-center justify-center">
-            {children}
-          </main>
-        </div>
+          {children}
+        </ConsentProvider>
       </body>
     </html>
   );
