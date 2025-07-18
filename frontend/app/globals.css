@@ -1,21 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Optional: Add any global styles below */
-html, body {
-  padding: 0;
-  margin: 0;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  background: #f9fafb; /* Tailwind's gray-50 */
-  color: #111827; /* Tailwind's gray-900 */
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-}
