@@ -1,35 +1,42 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 type ConsentContextType = {
   hasConsented: boolean;
-  setHasConsented: (val: boolean) => void;
+  setHasConsented: (value: boolean) => void;
 };
 
-const ConsentContext = createContext<ConsentContextType>({
+const defaultValue: ConsentContextType = {
   hasConsented: false,
   setHasConsented: () => {},
-});
+};
 
-export const ConsentProvider = ({ children }: { children: React.ReactNode }) => {
+const ConsentContext = createContext<ConsentContextType>(defaultValue);
+
+export const useConsent = () => useContext(ConsentContext);
+
+export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const [hasConsented, setHasConsented] = useState(false);
 
   useEffect(() => {
-    // Sync with localStorage for persistence
-    const storedConsent = localStorage.getItem("infernosource_consent");
-    setHasConsented(storedConsent === "true");
+    const stored = localStorage.getItem("hasConsented");
+    if (stored === "true") setHasConsented(true);
   }, []);
 
-  const updateConsent = (val: boolean) => {
-    setHasConsented(val);
-    localStorage.setItem("infernosource_consent", val ? "true" : "false");
-  };
+  useEffect(() => {
+    localStorage.setItem("hasConsented", hasConsented.toString());
+  }, [hasConsented]);
 
   return (
-    <ConsentContext.Provider value={{ hasConsented, setHasConsented: updateConsent }}>
+    <ConsentContext.Provider value={{ hasConsented, setHasConsented }}>
       {children}
     </ConsentContext.Provider>
   );
 };
-
-export const useConsent = () => useContext(ConsentContext);
