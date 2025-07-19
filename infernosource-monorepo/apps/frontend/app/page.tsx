@@ -1,49 +1,26 @@
-"use client";
-import Image from "next/image";
+// apps/frontend/app/page.tsx
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="relative flex flex-col items-center min-h-screen w-full bg-gradient-to-b from-black via-neutral-900 to-gray-800">
-      {/* Logo - moved up */}
-      <div className="pt-24 flex flex-col items-center w-full z-10 select-none pointer-events-none">
-       <Image
-          src="/logo.png"
-          alt="InfernoSource Logo"
-          width={400}
-          height={200}
-          className="opacity-50"
-          style={{ maxWidth: "60vw", height: "auto" }}
-
- 
-        />
-      </div>
-      {/* Buttons and Tagline fixed at the bottom */}
-      <div
-        className="w-full flex flex-col items-center z-20"
-        style={{ position: "absolute", bottom: "88px" }}
-      >
-        {/* Buttons */}
-        <div className="flex gap-6 mb-8">
-          <a
-            href="/signup"
-            className="px-8 py-3 rounded bg-white text-orange-600 font-semibold text-lg shadow hover:bg-orange-100 transition"
-          >
+    <main className="flex min-h-screen flex-col items-center justify-center bg-white text-gray-900 px-4">
+      <section className="text-center space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          Welcome to InfernoSource 🔥
+        </h1>
+        <p className="text-lg text-gray-600 max-w-xl mx-auto">
+          Ignite. Optimize. Dominate.  
+          <br />
+          Your AI-powered web replication platform is ready.
+        </p>
+        <div className="flex gap-4 justify-center mt-6">
+          <button className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition">
             Get Started
-          </a>
-          <a
-            href="/about"
-            className="px-8 py-3 rounded bg-black/50 text-white font-semibold border border-white text-lg hover:bg-black/70 transition"
-          >
+          </button>
+          <button className="px-6 py-3 border border-black text-black rounded-lg hover:bg-black hover:text-white transition">
             Learn More
-          </a>
+          </button>
         </div>
-        {/* Tagline */}
-        <div className="mt-4">
-          <span className="text-2xl text-white font-extrabold tracking-widest drop-shadow-xl">
-            Ignite. Create. Dominate.
-          </span>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

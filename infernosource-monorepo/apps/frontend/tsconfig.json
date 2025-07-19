@@ -1,45 +1,23 @@
+// apps/frontend/tsconfig.json
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES6",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@app/*": [
-        "app/*"
-      ],
       "@components/*": [
         "components/*"
       ],
       "@context/*": [
-        "app/context/*"
+        "context/*"
       ],
-      "@lib/*": [
-        "lib/*"
-      ],
-      "@styles/*": [
-        "styles/*"
-      ],
-      "@public/*": [
-        "public/*"
+      "@app/*": [
+        "app/*"
       ]
     },
+    "types": [
+      "node"
+    ],
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
@@ -47,9 +25,9 @@
     ]
   },
   "include": [
+    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

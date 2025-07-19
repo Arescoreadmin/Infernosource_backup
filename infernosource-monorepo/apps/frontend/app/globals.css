@@ -1,3 +1,42 @@
+/* apps/frontend/app/globals.css */
+
+/* 1. Tailwind Preflight (required) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 2. Custom global styles */
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #111827;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 3. Selection */
+::selection {
+  background-color: #000;
+  color: #fff;
+}
+
+/* 4. Box sizing and border default */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+
+/* 5. Optional utility overrides or extensions */
+.container {
+  @apply mx-auto px-4;
+}
