@@ -1,14 +1,9 @@
-export const metadata = {
-  title: "About InfernoSource",
-  description: "Learn more about the InfernoSource platform and team.",
-};
-
-export default function DashboardPage() {
+// apps/frontend/app/dashboard/page.tsx
+export default function CampaignDashboard() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
-      <p>Welcome to your dashboard. Here you can manage your projects, sites, and AI tools.</p>
-      {/* Add dashboard widgets/components here */}
-    </main>
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Your Campaigns</h1>
+      <p>List and manage your AI campaigns here. (Table view coming soon.)</p>
+    </div>
   );
 }
