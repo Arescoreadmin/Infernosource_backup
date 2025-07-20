@@ -1,37 +1,36 @@
+# backend/spider/test_spider.py
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
-from collections import deque
 
-def is_valid_url(url):
+def simple_scrape(url: str):
+    """
+    Fetches a page and extracts its title and first 500 characters of text content.
+    """
+    print(f"Scraping URL: {url}")
     try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc])
-    except:
-        return False
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        html = response.text
 
-def is_same_domain(start_url, link):
-    return urlparse(start_url).netloc == urlparse(link).netloc
+        soup = BeautifulSoup(html, "html.parser")
+        title = soup.title.string if soup.title else "No title"
+        body_text = soup.get_text(separator=' ', strip=True)[:500]
 
-def crawl(start_url: str, max_pages: int = 50):
-    visited = set()
-    queue = deque([start_url])
-    results = []
+        print(f"Title: {title}")
+        print(f"Content preview: {body_text}")
+        return {
+            "title": title,
+            "preview": body_text
+        }
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return None
 
-    while queue and len(visited) < max_pages:
-        url = queue.popleft()
-        if url in visited:
-            continue
-        try:
-            response = requests.get(url, timeout=10)
-            visited.add(url)
-            results.append(url)
-            soup = BeautifulSoup(response.content, "html.parser")
-            for a_tag in soup.find_all("a", href=True):
-                link = urljoin(url, a_tag["href"])
-                if is_valid_url(link) and is_same_domain(start_url, link) and link not in visited:
-                    queue.append(link)
-        except requests.RequestException:
-            continue
-
-    return results
+if __name__ == "__main__":
+    test_url = "https://example.com"
+    result = simple_scrape(test_url)
+    if result:
+        print("Scraping succeeded.")
+    else:
+        print("Scraping failed.")

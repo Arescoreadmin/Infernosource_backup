@@ -1,19 +1,32 @@
-# apps/backend/domain_affiliate.py
+# backend/domain_affiliate.py
 
-from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
-def embed_affiliate_links(html: str, affiliate_url: str) -> str:
+AFFILIATE_DOMAINS = {
+    "amazon.com": "https://amzn.to/your-affiliate-id",
+    "example.com": "https://example.com/affiliate-link",
+    # Add more domains and links as needed
+}
+
+def get_affiliate_link(url: str) -> str:
     """
-    Replaces all <a> tag hrefs in the given HTML with the specified affiliate URL.
-    
-    Parameters:
-    - html (str): The raw HTML content.
-    - affiliate_url (str): The affiliate link to embed in place of existing hrefs.
-
-    Returns:
-    - str: The modified HTML with updated affiliate links.
+    Return an affiliate link for the given URL's domain, if supported.
     """
-    soup = BeautifulSoup(html, 'html.parser')
-    for a_tag in soup.find_all('a', href=True):
-        a_tag['href'] = affiliate_url
-    return str(soup)
+    parsed = urlparse(url)
+    domain = parsed.netloc.lower().replace("www.", "")
+    return AFFILIATE_DOMAINS.get(domain, url)  # Return original URL if not found
+
+def inject_affiliate_links(html: str) -> str:
+    """
+    Dummy function to 'inject' affiliate links into anchor tags in provided HTML.
+    (Real logic would use an HTML parser and more advanced link rewriting.)
+    """
+    for domain, affiliate_link in AFFILIATE_DOMAINS.items():
+        html = html.replace(f'href="https://{domain}"', f'href="{affiliate_link}"')
+    return html
+
+if __name__ == "__main__":
+    test_url = "https://amazon.com/product/abc"
+    print("Affiliate link:", get_affiliate_link(test_url))
+    test_html = '<a href="https://amazon.com">Amazon</a>'
+    print("Injected HTML:", inject_affiliate_links(test_html))

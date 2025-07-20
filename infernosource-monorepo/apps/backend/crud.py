@@ -1,76 +1,58 @@
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-from . import models
+from apps.backend.models import ScrapedPage, Campaign
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# --- ScrapedPage CRUD ---
 
-
-# ========== USERS ==========
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
-
-
-def create_user(db: Session, email: str, password: str, full_name: str = "", role: str = "user"):
-    hashed_password = pwd_context.hash(password)
-    db_user = models.User(
-        email=email,
-        hashed_password=hashed_password,
-        full_name=full_name,
-        role=role
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
-def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email)
-    if not user or not pwd_context.verify(password, user.hashed_password):
-        return None
-    return user
-
-
-# ========== SITES ==========
-def create_site(db: Session, name: str, url: str, owner_id: int):
-    site = models.Site(name=name, url=url, owner_id=owner_id)
-    db.add(site)
-    db.commit()
-    db.refresh(site)
-    return site
-
-
-def get_site_by_url(db: Session, url: str):
-    return db.query(models.Site).filter(models.Site.url == url).first()
-
-
-# ========== PAGES ==========
-def create_scraped_page(db: Session, site_id: int, url: str, html_content: str, extracted_text: str):
-    page = models.ScrapedPage(
-        site_id=site_id,
+def create_scraped_page(db: Session, url: str, html_content: str, extracted_text: str, site_id: int = None):
+    scraped_page = ScrapedPage(
         url=url,
         html_content=html_content,
-        extracted_text=extracted_text
+        extracted_text=extracted_text,
+        site_id=site_id
     )
-    db.add(page)
+    db.add(scraped_page)
+    db.commit()
+    db.refresh(scraped_page)
+    return scraped_page
+
+def get_all_scraped_pages(db: Session):
+    return db.query(ScrapedPage).all()
+
+def get_scraped_page(db: Session, page_id: int):
+    return db.query(ScrapedPage).filter(ScrapedPage.id == page_id).first()
+
+def update_scraped_page(db: Session, page_id: int, url: str = None):
+    page = get_scraped_page(db, page_id)
+    if not page:
+        return None
+    if url:
+        page.url = url
     db.commit()
     db.refresh(page)
     return page
 
-
-def get_page(db: Session, page_id: int):
-    return db.query(models.ScrapedPage).filter(models.ScrapedPage.id == page_id).first()
-
-
-# ========== SESSION LOGS ==========
-def create_session_log(db: Session, user_id: int, action: str, details: str = None):
-    log = models.SessionLog(
-        user_id=user_id,
-        action=action,
-        details=details
-    )
-    db.add(log)
+def delete_scraped_page(db: Session, page_id: int):
+    page = get_scraped_page(db, page_id)
+    if not page:
+        return False
+    db.delete(page)
     db.commit()
-    db.refresh(log)
-    return log
+    return True
+
+# --- Campaign CRUD ---
+
+def create_campaign(db: Session, name: str, description: str = None, page_ids: list = []):
+    campaign = Campaign(name=name, description=description)
+    if page_ids:
+        pages = db.query(ScrapedPage).filter(ScrapedPage.id.in_(page_ids)).all()
+        campaign.pages = pages
+    db.add(campaign)
+    db.commit()
+    db.refresh(campaign)
+    return campaign
+
+def get_campaigns(db: Session):
+    return db.query(Campaign).all()
+
+def get_campaign(db: Session, campaign_id: int):
+    return db.query(Campaign).filter(Campaign.id == campaign_id).first()

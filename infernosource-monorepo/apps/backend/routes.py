@@ -1,69 +1,103 @@
-# apps/backend/ai_rewriting/routes.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from typing import Optional
-import os
-
-try:
-    import openai
-    OPENAI_AVAILABLE = True
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-except ImportError:
-    OPENAI_AVAILABLE = False
+from apps.backend.database import get_db
+from apps.backend.models import ScrapedPage
+from apps.backend.schemas import (
+    ScrapedPageResponse, ScrapeRequest,
+    CampaignCreate, CampaignResponse
+)
+from apps.backend.crud import (
+    create_campaign, get_campaigns, get_campaign
+)
 
 router = APIRouter()
 
-class RewriteRequest(BaseModel):
-    text: str = Field(..., description="Text content to be rewritten")
-    tone: Optional[str] = Field("neutral", description="Desired tone (e.g., persuasive, casual, professional)")
-    temperature: Optional[float] = Field(0.7, description="Creativity level for AI output")
+# ----- Scraped Pages CRUD -----
 
-class RewriteResponse(BaseModel):
-    original: str
-    rewritten: str
-    tone: str
-    used_ai: bool
+@router.get("/test", tags=["Sites"])
+def sites_test():
+    """Check Sites route status."""
+    return {"status": "sites route active"}
 
-@router.post("/rewrite", response_model=RewriteResponse, tags=["AI Rewriting"])
-async def rewrite_text(request: RewriteRequest):
-    """
-    Rewrite text using AI (OpenAI GPT-based) or a fallback logic if unavailable.
-    """
-    if not request.text.strip():
-        raise HTTPException(status_code=400, detail="Input text cannot be empty.")
+@router.get("/pages", response_model=List[ScrapedPageResponse], tags=["Sites"])
+def list_scraped_pages(db: Session = Depends(get_db)):
+    """Return all scraped pages."""
+    pages = db.query(ScrapedPage).all()
+    return pages
 
-    if OPENAI_AVAILABLE and openai.api_key:
-        try:
-            prompt = (
-                f"Rewrite the following text in a {request.tone} tone:\n\n"
-                f"{request.text}\n\n"
-                "Rewritten:"
-            )
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "You are a rewriting assistant."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=request.temperature,
-                max_tokens=1000
-            )
-            rewritten = response['choices'][0]['message']['content'].strip()
-            return RewriteResponse(
-                original=request.text,
-                rewritten=rewritten,
-                tone=request.tone,
-                used_ai=True
-            )
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"AI rewriting failed: {str(e)}")
-    else:
-        # Fallback dummy rewrite
-        rewritten = f"[{request.tone} tone rewrite not available — dummy output]: {request.text}"
-        return RewriteResponse(
-            original=request.text,
-            rewritten=rewritten,
-            tone=request.tone,
-            used_ai=False
-        )
+@router.get("/pages/{page_id}", response_model=ScrapedPageResponse, tags=["Sites"])
+def get_scraped_page(page_id: int, db: Session = Depends(get_db)):
+    """Return a single scraped page by ID."""
+    page = db.query(ScrapedPage).filter(ScrapedPage.id == page_id).first()
+    if not page:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return page
+
+@router.put("/pages/{page_id}", response_model=ScrapedPageResponse, tags=["Sites"])
+def update_scraped_page(page_id: int, payload: ScrapeRequest, db: Session = Depends(get_db)):
+    """Update the URL of a scraped page."""
+    page = db.query(ScrapedPage).filter(ScrapedPage.id == page_id).first()
+    if not page:
+        raise HTTPException(status_code=404, detail="Page not found")
+    if payload.url:
+        page.url = payload.url
+    # Extend this section to update more fields as needed
+    db.commit()
+    db.refresh(page)
+    return page
+
+@router.delete("/pages/{page_id}", tags=["Sites"])
+def delete_scraped_page(page_id: int, db: Session = Depends(get_db)):
+    """Delete a scraped page by ID."""
+    page = db.query(ScrapedPage).filter(ScrapedPage.id == page_id).first()
+    if not page:
+        raise HTTPException(status_code=404, detail="Page not found")
+    db.delete(page)
+    db.commit()
+    return {"detail": "Page deleted"}
+
+# ----- Campaign CRUD -----
+
+@router.post("/campaigns", response_model=CampaignResponse, tags=["Campaigns"])
+def create_new_campaign(payload: CampaignCreate, db: Session = Depends(get_db)):
+    """Create a new campaign and link scraped pages."""
+    campaign = create_campaign(
+        db,
+        name=payload.name,
+        description=payload.description,
+        page_ids=payload.page_ids or []
+    )
+    return CampaignResponse(
+        id=campaign.id,
+        name=campaign.name,
+        description=campaign.description,
+        page_ids=[p.id for p in campaign.pages]
+    )
+
+@router.get("/campaigns", response_model=List[CampaignResponse], tags=["Campaigns"])
+def list_campaigns(db: Session = Depends(get_db)):
+    """List all campaigns."""
+    campaigns = get_campaigns(db)
+    return [
+        CampaignResponse(
+            id=c.id,
+            name=c.name,
+            description=c.description,
+            page_ids=[p.id for p in c.pages]
+        ) for c in campaigns
+    ]
+
+@router.get("/campaigns/{campaign_id}", response_model=CampaignResponse, tags=["Campaigns"])
+def get_campaign_details(campaign_id: int, db: Session = Depends(get_db)):
+    """Get campaign details by ID."""
+    campaign = get_campaign(db, campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return CampaignResponse(
+        id=campaign.id,
+        name=campaign.name,
+        description=campaign.description,
+        page_ids=[p.id for p in campaign.pages]
+    )

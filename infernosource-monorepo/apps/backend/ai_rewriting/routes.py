@@ -1,23 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from apps.backend.database import get_db
+from fastapi import APIRouter, HTTPException
 from apps.backend.schemas import RewriteRequest, RewriteResponse
-from apps.backend.ai_rewriting.rewriting import rewrite_text
 
 router = APIRouter()
 
 @router.get("/test", tags=["AI Rewriting"])
-def rewrite_test():
+def ai_rewriting_test():
     """Check AI rewriting module status."""
-    return {"status": "ai_rewriting route active"}
+    return {"status": "ai rewriting route active"}
 
-@router.post("/rewrite", response_model=RewriteResponse)
-def rewrite_endpoint(request: RewriteRequest, db: Session = Depends(get_db)):
+@router.post("/rewrite-text", response_model=RewriteResponse)
+def rewrite_text(request: RewriteRequest):
     """
-    Rewrite given text using the AI model.
+    Dummy AI rewriting logic (replace with actual AI integration later).
+    Accepts either text or a URL (but requires at least one).
     """
-    if not request.text:
-        raise HTTPException(status_code=400, detail="Text to rewrite is required")
-    
-    rewritten = rewrite_text(request.text, tone=request.tone)
-    return {"original": request.text, "rewritten": rewritten}
+    if not request.text and not request.url:
+        raise HTTPException(status_code=400, detail="Either text or URL is required.")
+
+    # For now, just return a "rewritten" version (mock logic)
+    input_text = request.text or f"Content fetched from {request.url}"
+    rewritten = f"🔥 REWRITTEN: {input_text} 🔥"
+    return RewriteResponse(rewritten_text=rewritten)

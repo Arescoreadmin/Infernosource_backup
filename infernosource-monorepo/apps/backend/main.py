@@ -34,6 +34,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Health check endpoint
+@app.get("/health", tags=["System"])
+def health_check():
+    return {"status": "ok"}
+
 # Register routers
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(site_router, prefix="/sites", tags=["Sites"])

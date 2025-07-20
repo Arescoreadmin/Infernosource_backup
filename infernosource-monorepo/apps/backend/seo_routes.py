@@ -1,18 +1,34 @@
-from fastapi import APIRouter
-from .lighthouse_utils import run_lighthouse
+from fastapi import APIRouter, Body
+from pydantic import BaseModel
+from typing import List, Optional
 
 router = APIRouter()
 
-@router.get("/seo-audit")
-def seo_audit(url: str):
-    """
-    Runs a Lighthouse SEO audit on the provided URL.
+class SEORequest(BaseModel):
+    html: str
 
-    Parameters:
-        url (str): Website URL to audit.
+class SEOResponse(BaseModel):
+    title: Optional[str]
+    meta_description: Optional[str]
+    keywords: List[str] = []
 
-    Returns:
-        dict: Parsed Lighthouse audit results or error message.
+@router.get("/test", tags=["SEO"])
+def seo_test():
+    """Check SEO route status."""
+    return {"status": "seo route active"}
+
+@router.post("/analyze", response_model=SEOResponse, tags=["SEO"])
+def analyze_seo(request: SEORequest = Body(...)):
     """
-    result = run_lighthouse(url)
-    return result
+    Dummy SEO analysis logic (replace with real HTML parsing/SEO audit later).
+    """
+    # Placeholder logic for extracting mock SEO data
+    mock_title = "Sample Title"
+    mock_description = "Sample meta description"
+    mock_keywords = ["sample", "seo", "keywords"]
+
+    return SEOResponse(
+        title=mock_title,
+        meta_description=mock_description,
+        keywords=mock_keywords
+    )

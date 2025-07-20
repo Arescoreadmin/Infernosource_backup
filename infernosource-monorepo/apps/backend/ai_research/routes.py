@@ -1,44 +1,42 @@
-from fastapi import APIRouter, Depends
-from apps.backend.auth import get_current_user
-from apps.backend.schemas import CompetitorQuery
-import openai
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Optional, List
 
 router = APIRouter()
 
-@router.post("/competitors")
-def find_competitors(query: CompetitorQuery, user=Depends(get_current_user)):
-    if query.idea and query.competitor_url:
-        prompt = (
-            f"Given this business idea: '{query.idea}' and competitor site: '{query.competitor_url}', "
-            "list the top 3 competitor websites (with their URLs only)."
-        )
-    elif query.idea:
-        prompt = (
-            f"Given this business idea: '{query.idea}', "
-            "list the top 3 competitor websites (with their URLs only)."
-        )
-    elif query.competitor_url:
-        prompt = (
-            f"Given this competitor site: '{query.competitor_url}', "
-            "list the top 3 similar competitor websites (with their URLs only)."
-        )
-    else:
-        return {"error": "Please provide either an idea or a competitor_url."}
-    
-    # You must have your OpenAI API key set as an environment variable
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a helpful web business analyst."},
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=150,
-        temperature=0.3,
+class ResearchQuery(BaseModel):
+    topic: str
+    competitor: Optional[str] = None
+
+class ResearchInsight(BaseModel):
+    title: str
+    summary: str
+
+class ResearchResponse(BaseModel):
+    topic: str
+    insights: List[ResearchInsight]
+
+@router.get("/test", tags=["AI Research"])
+def ai_research_test():
+    """Check AI Research route status."""
+    return {"status": "ai research route active"}
+
+@router.post("/insights", response_model=ResearchResponse, tags=["AI Research"])
+def get_research_insights(query: ResearchQuery):
+    """
+    Dummy AI research (replace with actual LLM research/integration).
+    """
+    mock_insights = [
+        ResearchInsight(
+            title=f"Latest trends in {query.topic}",
+            summary=f"Summary about new trends in {query.topic} for {query.competitor or 'the industry'}."
+        ),
+        ResearchInsight(
+            title=f"Key competitors for {query.topic}",
+            summary=f"Competitor analysis for {query.competitor or query.topic}."
+        ),
+    ]
+    return ResearchResponse(
+        topic=query.topic,
+        insights=mock_insights
     )
-    text = response.choices[0].message['content']
-    competitors = []
-    for line in text.split('\n'):
-        if 'http' in line:
-            url = line.strip().split(' ')[-1]
-            competitors.append({"url": url})
-    return {"results": competitors}
